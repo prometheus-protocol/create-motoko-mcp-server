@@ -1,0 +1,26 @@
+[package]
+name = "my-mcp-server"
+version = "1.0.0"
+description = "Interact with the Model Context Protocol using the Motoko programming language"
+repository = "https://github.com/username/my-mcp-server"
+keywords = [ ]
+license = "MIT"
+
+[dependencies]
+base = "0.14.14"
+json = "1.4.0"
+map = "9.0.1"
+http-types = "1.0.1"
+base-x-encoder = "1.2.0"
+jwt = "1.1.0"
+ecdsa = "6.0.1"
+certified-cache = "0.3.0"
+sha2 = "0.1.6"
+ic = "3.0.0"
+mcp-motoko-sdk = "1.1.2"
+
+[dev-dependencies]
+test = "2.1.1"
+
+[toolchain]
+moc = "0.14.14"

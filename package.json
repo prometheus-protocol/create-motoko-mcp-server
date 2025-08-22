@@ -1,0 +1,21 @@
+{
+  "name": "create-motoko-mcp-server",
+  "version": "1.0.0",
+  "description": "Creates a new Motoko MCP server project for the Prometheus Protocol ecosystem.",
+  "main": "bin/cli.js",
+  "bin": {
+    "create-motoko-mcp-server": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "internet-computer",
+    "icp",
+    "motoko",
+    "mcp",
+    "prometheus-protocol"
+  ],
+  "author": "Prometheus Protocol Team",
+  "license": "MIT"
+}
