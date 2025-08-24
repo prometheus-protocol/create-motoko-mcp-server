@@ -1,14 +1,21 @@
 {
   "name": "create-motoko-mcp-server",
-  "version": "1.0.0",
-  "description": "Creates a new Motoko MCP server project for the Prometheus Protocol ecosystem.",
+  "version": "0.0.0-development",
+  "description": "A CLI to generate a ready-to-deploy Motoko MCP server for the Prometheus Protocol.",
   "main": "bin/cli.js",
   "bin": {
     "create-motoko-mcp-server": "./bin/cli.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "bin",
+    "template"
+  ],
   "keywords": [
     "internet-computer",
     "icp",
@@ -17,5 +24,12 @@
     "prometheus-protocol"
   ],
   "author": "Prometheus Protocol Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^11.0.4",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.0.3",
+    "semantic-release": "^24.2.7"
+  }
 }

@@ -1,0 +1,40 @@
+name: Release to npm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+      
+    permissions:
+      contents: write # to push new commits and tags
+      issues: write # to comment on released issues
+      pull-requests: write # to comment on released pull requests
+      packages: write # to publish packages to npm
+
+    steps:
+      - name: 1. Checkout
+        uses: actions/checkout@v4
+        with:
+          # This is required to let semantic-release analyze the git history
+          fetch-depth: 0
+
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 3. Install dependencies
+        run: npm install
+
+      - name: 4. Run semantic-release
+        run: npx semantic-release
+        env:
+          # This token is used to create a GitHub release
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # This token is used to publish to npm
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
