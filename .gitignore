@@ -1,6 +1,4 @@
 .mops
 .dfx
 .env
-prometheus.yml
-prometheus-tokens.json
 node_modules
