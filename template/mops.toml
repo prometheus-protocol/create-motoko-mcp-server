@@ -1,7 +1,7 @@
 [package]
 name = "my-mcp-server"
 version = "1.0.0"
-description = "Interact with the Model Context Protocol using the Motoko programming language"
+description = "A Motoko MCP server created with create-motoko-mcp-server"
 repository = "https://github.com/username/my-mcp-server"
 keywords = [ ]
 license = "MIT"
@@ -17,7 +17,7 @@ ecdsa = "6.0.1"
 certified-cache = "0.3.0"
 sha2 = "0.1.6"
 ic = "3.0.0"
-mcp-motoko-sdk = "1.1.2"
+mcp-motoko-sdk = "1.2.0"
 
 [dev-dependencies]
 test = "2.1.1"
