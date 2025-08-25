@@ -46,7 +46,7 @@ shared persistent actor class McpServer() = self {
   // By default, it is `null`, and all tools are public.
   // =================================================================================
 
-  let authContext : ?AuthTypes.AuthContext = null;
+  transient let authContext : ?AuthTypes.AuthContext = null;
 
   /*
   // --- UNCOMMENT THIS BLOCK TO ENABLE AUTHENTICATION ---
@@ -65,7 +65,7 @@ shared persistent actor class McpServer() = self {
   };
 
   // Initialize the auth context with the issuer URL and required scopes.
-  let authContext : ?AuthTypes.AuthContext = ?AuthState.init(
+  transient let authContext : ?AuthTypes.AuthContext = ?AuthState.init(
     Principal.fromActor(self),
     issuerUrl,
     requiredScopes,

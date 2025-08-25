@@ -76,11 +76,6 @@ Use the built-in `auth` script to interact with the Prometheus Auth Server.
     ```bash
     npm run auth register
     ```
-2.  **Configure for Local Development:** For local testing, you must update the registered `redirect_uri` to point to your local canister's endpoint.
-    ```bash
-    npm run auth update
-    ```
-    When prompted, change the `redirect_uri` to your local canister URL (e.g., `http://127.0.0.1:4943/?canisterId=your_canister_id`).
 
 *Tip: See all available commands by running `npm run auth -- --help`.*
 
