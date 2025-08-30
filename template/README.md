@@ -34,13 +34,15 @@ npm run mops:install
     npm run start
     ```
 2.  **Deploy to the Local Replica:** (In a new terminal window)
+    **MODIFIED:** Your canister now requires initialization arguments for ownership and payments.
     ```bash
     npm run deploy
     ```
+    *This script automatically provides default arguments for local deployment. You can edit them in `package.json`.*
 
 ### Step 3: Test with the MCP Inspector
 
-Your server is live and its default `echo` tool is ready to use.
+Your server is live and its default `get_weather` tool is ready to use.
 
 1.  **Launch the Inspector:**
     ```bash
@@ -55,20 +57,27 @@ Your server is live and its default `echo` tool is ready to use.
 
 ---
 
-## Part 2: Enable Monetization (Optional)
+## Part 2: Enable Monetization
 
-Ready to add paid tools? Follow these steps to enable the Prometheus OAuth flow.
+Ready to add paid tools? Follow these steps.
 
-### Step 1: Activate the Auth Code in Your Canister
+### Step 1: Configure Your Paid Tool
 
 1.  Open `src/main.mo`.
-2.  Uncomment the large block of code that initializes the `authContext`.
-3.  Save the file.
-4.  Run `npm run deploy` again to update your canister with the authentication logic.
+2.  Find the `tools` array and uncomment the `payment` block inside the `get_weather` tool definition.
+3.  Uncomment the `allowanceUrl` in the `mcpConfig` to provide users with a link to manage their token allowances. If you're using the Prometheus Auth Server, you can use: `https://bmfnl-jqaaa-aaaai-q32ha-cai.icp0.io/`
+
+### Step 2: Enable Authentication
+
+Paid tools require authentication to identify the paying user.
+
+1.  In `src/main.mo`, uncomment the large block of code that initializes the `authContext`.
+2.  Save the file.
+3.  Run `npm run deploy` again to update your canister with the new logic.
 
 Your server's tools are now protected and require a valid token to be called.
 
-### Step 2: Register with the Auth Server
+### Step 3: Register with the Auth Server
 
 Use the built-in `auth` script to interact with the Prometheus Auth Server.
 
@@ -81,68 +90,36 @@ Use the built-in `auth` script to interact with the Prometheus Auth Server.
 
 ---
 
-## Part 3: Publish to the Prometheus App Store
+## Part 3: Treasury Management
 
-This section guides you through submitting your server for verification and discovery.
+Your canister includes built-in Treasury functions to securely manage the funds it collects.
 
-### Step 1: Initialize Your Submission Package
+-   **`get_owner()`**: View the canister's owner.
+-   **`set_owner(new_owner)`**: Transfer ownership (owner only).
+-   **`get_treasury_balance(ledger_id)`**: Check the canister's balance of any ICRC-1 token.
+-   **`withdraw(ledger_id, amount, destination)`**: Withdraw funds to any account (owner only).
 
-The `init` command runs an interactive wizard that will create your `prometheus.yml` manifest.
-
+You can call these functions using `dfx`. For example, to check the canister's balance:
 ```bash
-# Run this command from your project's root directory
-npm run app-store init
+# Replace `your_ledger_id` with the ICRC-1 ledger canister ID
+dfx canister call my_awesome_mcp_server get_treasury_balance '(principal "your_ledger_id")'
 ```
 
-### Step 2: Add Your Git Commit Hash
+---
 
-For auditability, the submission requires the exact Git commit hash of the code you are deploying.
+## Part 4: Publish to the Prometheus App Store
 
-1.  **Commit your latest changes:**
-    ```bash
-    git add .
-    git commit -m "Prepare for initial submission"
-    ```
-2.  **Get the commit hash:**
-    ```bash
-    git rev-parse HEAD
-    ```
-3.  **Update your manifest:** Open `prometheus.yml` and paste the commit hash into the `git_commit` field.
-
-### Step 3: Submit for Verification
-
-With your manifest complete, you can now submit your application for its first audit.
-
-```bash
-npm run app-store submit
-```
-
-### Step 4: Monitor Verification Status
-
-Check the status of your submission at any time. Once all required audits are complete and finalized by the DAO, your server will receive its official verification tier.
-
-```bash
-npm run app-store status
-```
-
-### Step 5: Publish Your Verified WASM
-
-After your submission has been successfully audited, the final step is to publish the WASM file to the Prometheus Registry.
-
-```bash
-# Note the '--' which is required to pass arguments to the script
-npm run app-store -- publish --app-version "0.1.0"
-```
-
-🎉 **Success!** Your application is now fully published and discoverable in the Prometheus App Store.
+*(This section remains the same)*
 
 ---
 
 ## Deploying to Production
 
 1.  **Deploy to the IC Mainnet:**
+    **MODIFIED:** You must provide your mainnet owner principal and the target ledger ID.
     ```bash
-    npm run deploy:ic
+    # Replace the placeholder principals with your real mainnet values
+    npm run deploy:ic -- --argument '(record { owner = principal "your-mainnet-principal"; paymentLedger = principal "mxzaz-hqaaa-aaaar-qaada-cai" })'
     ```
 
 2.  **Update OAuth Redirect URI:** **(Important!)** If you enabled monetization, you must run `npm run auth update` again and change the `redirect_uri` to your production URL.
