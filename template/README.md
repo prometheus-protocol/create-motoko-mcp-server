@@ -34,11 +34,9 @@ npm run mops:install
     npm run start
     ```
 2.  **Deploy to the Local Replica:** (In a new terminal window)
-    **MODIFIED:** Your canister now requires initialization arguments for ownership and payments.
     ```bash
     npm run deploy
     ```
-    *This script automatically provides default arguments for local deployment. You can edit them in `package.json`.*
 
 ### Step 3: Test with the MCP Inspector
 
@@ -65,7 +63,7 @@ Ready to add paid tools? Follow these steps.
 
 1.  Open `src/main.mo`.
 2.  Find the `tools` array and uncomment the `payment` block inside the `get_weather` tool definition.
-3.  Uncomment the `allowanceUrl` in the `mcpConfig` to provide users with a link to manage their token allowances. If you're using the Prometheus Auth Server, you can use: `https://bmfnl-jqaaa-aaaai-q32ha-cai.icp0.io/`
+3.  Uncomment the `allowanceUrl` in the `mcpConfig` to provide users with a link to manage their token allowances. If you're using the Prometheus Auth Server, you can use: `https://bmfnl-jqaaa-aaaai-q32ha-cai.icp0.io`
 
 ### Step 2: Enable Authentication
 
@@ -109,17 +107,16 @@ dfx canister call my_awesome_mcp_server get_treasury_balance '(principal "your_l
 
 ## Part 4: Publish to the Prometheus App Store
 
-*(This section remains the same)*
+Once your server is tested and ready, you can publish it to the [Prometheus App Store](https://prometheusprotocol.org).
 
 ---
 
 ## Deploying to Production
 
 1.  **Deploy to the IC Mainnet:**
-    **MODIFIED:** You must provide your mainnet owner principal and the target ledger ID.
     ```bash
     # Replace the placeholder principals with your real mainnet values
-    npm run deploy:ic -- --argument '(record { owner = principal "your-mainnet-principal"; paymentLedger = principal "mxzaz-hqaaa-aaaar-qaada-cai" })'
+    npm run deploy:ic
     ```
 
 2.  **Update OAuth Redirect URI:** **(Important!)** If you enabled monetization, you must run `npm run auth update` again and change the `redirect_uri` to your production URL.
