@@ -11,6 +11,7 @@ import Json "mo:json";
 import AuthCleanup "mo:mcp-motoko-sdk/auth/Cleanup";
 import AuthState "mo:mcp-motoko-sdk/auth/State";
 import AuthTypes "mo:mcp-motoko-sdk/auth/Types";
+
 import Mcp "mo:mcp-motoko-sdk/mcp/Mcp";
 import McpTypes "mo:mcp-motoko-sdk/mcp/Types";
 import HttpHandler "mo:mcp-motoko-sdk/mcp/HttpHandler";
@@ -18,6 +19,8 @@ import Cleanup "mo:mcp-motoko-sdk/mcp/Cleanup";
 import State "mo:mcp-motoko-sdk/mcp/State";
 import Payments "mo:mcp-motoko-sdk/mcp/Payments";
 import HttpAssets "mo:mcp-motoko-sdk/mcp/HttpAssets";
+import Beacon "mo:mcp-motoko-sdk/mcp/Beacon";
+
 import SrvTypes "mo:mcp-motoko-sdk/server/Types";
 
 import IC "mo:ic";
@@ -76,17 +79,37 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
 
   // --- END OF AUTHENTICATION BLOCK ---
 
-  // --- Cleanup Timers ---
+  // =================================================================================
+  // --- OPT-IN: USAGE ANALYTICS (BEACON) ---
+  // To enable anonymous usage analytics, uncomment the `beaconContext` initialization.
+  // This helps the Prometheus Protocol DAO understand ecosystem growth.
+  // =================================================================================
+
+  transient let beaconContext : ?Beacon.BeaconContext = null;
+
+  // --- UNCOMMENT THIS BLOCK TO ENABLE THE BEACON ---
+  /*
+  let beaconCanisterId = Principal.fromText("m63pw-fqaaa-aaaai-q33pa-cai");
+  transient let beaconContext : ?Beacon.BeaconContext = ?Beacon.init(
+      beaconCanisterId, // Public beacon canister ID
+      24 * 60 * 60, // Send a beacon every 24 hours
+  );
+  */
+  // --- END OF BEACON BLOCK ---
+
+  // --- Timers ---
   Cleanup.startCleanupTimer<system>(appContext);
 
   // The AuthCleanup timer only needs to run if authentication is enabled.
   switch (authContext) {
-    case (?ctx) {
-      AuthCleanup.startCleanupTimer<system>(ctx);
-    };
-    case (null) {
-      Debug.print("Authentication is disabled.");
-    };
+    case (?ctx) { AuthCleanup.startCleanupTimer<system>(ctx) };
+    case (null) { Debug.print("Authentication is disabled.") };
+  };
+
+  // The Beacon timer only needs to run if the beacon is enabled.
+  switch (beaconContext) {
+    case (?ctx) { Beacon.startTimer<system>(ctx) };
+    case (null) { Debug.print("Beacon is disabled.") };
   };
 
   // --- 1. DEFINE YOUR RESOURCES & TOOLS ---
@@ -170,6 +193,7 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
     toolImplementations = [
       ("get_weather", getWeatherTool),
     ];
+    beacon = beaconContext;
   };
 
   // --- 4. CREATE THE SERVER LOGIC ---

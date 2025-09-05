@@ -88,7 +88,25 @@ Use the built-in `auth` script to interact with the Prometheus Auth Server.
 
 ---
 
-## Part 3: Treasury Management
+## Part 3: Enable Usage Analytics (Beacon)
+
+You can help the Prometheus Protocol ecosystem grow by enabling the optional, privacy-preserving usage beacon.
+
+**What is the beacon?**
+The beacon periodically sends an anonymous ping to a public Prometheus DAO canister. This ping simply signals that your server is active. It is **fully anonymous** and does not collect any user data, tool inputs, or IP addresses. This data helps the DAO measure ecosystem activity and growth.
+
+### How to Enable the Beacon
+
+1.  Open `src/main.mo`.
+2.  Find the section labeled `--- OPT-IN: USAGE ANALYTICS (BEACON) ---`.
+3.  Uncomment the block of code that initializes the `beaconContext`.
+4.  Save the file and run `npm run deploy` to update your canister.
+
+That's it! Your server will now contribute to public ecosystem analytics.
+
+---
+
+## Part 4: Treasury Management
 
 Your canister includes built-in Treasury functions to securely manage the funds it collects.
 
@@ -105,7 +123,7 @@ dfx canister call my_awesome_mcp_server get_treasury_balance '(principal "your_l
 
 ---
 
-## Part 4: Publish to the Prometheus App Store
+## Part 5: Publish to the Prometheus App Store
 
 Once your server is tested and ready, you can publish it to the [Prometheus App Store](https://prometheusprotocol.org).
 
