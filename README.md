@@ -15,7 +15,7 @@ The generated project includes:
 -   **Prometheus SDKs:** All necessary ICRC standards (`ICRC-126`, `ICRC-127`, etc.) are included as dependencies.
 -   **Built-in NPM Scripts:** Common tasks like deploying, testing, and starting a local replica are available out-of-the-box.
 -   **App Store Integration:** Comes with `@prometheus-protocol/app-store-cli` as a dev dependency and pre-configured scripts for easy publishing.
--   **Optional Auth:** A commented-out code block to easily enable Prometheus OAuth for monetization.
+-   **Optional Auth:** A commented-out code block to easily enable API keys and/or Prometheus OAuth for monetization.
 -   **Sample Tool:** A simple "echo" tool to demonstrate the basic structure of an MCP server.
 -   **Self-Documenting:** Generates a detailed `README.md` within your new project to guide you further.
 
@@ -26,6 +26,7 @@ Before you begin, make sure you have the following tools installed:
 1.  **Node.js:** Version 18.0 or higher. [Download](https://nodejs.org/).
 2.  **DFX:** The DFINITY Canister SDK. [Installation Guide](https://internetcomputer.org/docs/current/developer-docs/setup/install/).
 3.  **MOPS:** The Motoko Package Manager. [Installation Guide](https://mops.one/docs/install).
+4. **Git:** The version control system. [Download](https://git-scm.com/).
 
 ## 🚀 Usage (Quick Start)
 
@@ -74,13 +75,12 @@ Once your project is created, the generated `README.md` inside `my-awesome-app/`
 
 3.  **Enable Monetization (Optional):**
     -   Uncomment the auth code in `src/main.mo` and redeploy.
-    -   Register your server with the auth service using `npm run auth register`.
+    -   Create an API key using `dfx canister call <your_canister_name> create_my_api_key '("My Key", ["read", "write"])'`.
+    -   (Optional) Register your server with the auth service using `npm run auth register`.
 
 4.  **Publish to the App Store:**
     -   `npm run app-store init` (Creates your `prometheus.yml` manifest)
-    -   `npm run app-store submit` (Submits your WASM for verification)
-    -   `npm run app-store status` (Monitors the audit and DAO approval process)
-    -   `npm run app-store -- publish --app-version "0.1.0"` (Publishes the final, verified version)
+    -   `npm run app-store -- publish --app-version "0.1.0"` (Publishes your server for verification)
 
 ## Contributing
 

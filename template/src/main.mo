@@ -3,6 +3,7 @@ import Text "mo:base/Text";
 import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
+import Option "mo:base/Option";
 
 import HttpTypes "mo:http-types";
 import Map "mo:map/Map";
@@ -20,14 +21,21 @@ import State "mo:mcp-motoko-sdk/mcp/State";
 import Payments "mo:mcp-motoko-sdk/mcp/Payments";
 import HttpAssets "mo:mcp-motoko-sdk/mcp/HttpAssets";
 import Beacon "mo:mcp-motoko-sdk/mcp/Beacon";
+import ApiKey "mo:mcp-motoko-sdk/auth/ApiKey";
 
 import SrvTypes "mo:mcp-motoko-sdk/server/Types";
 
 import IC "mo:ic";
 
-shared ({ caller = deployer }) persistent actor class McpServer() = self {
+shared ({ caller = deployer }) persistent actor class McpServer(
+  args : ?{
+    owner : ?Principal;
+  }
+) = self {
 
-  var owner : Principal = deployer;
+  // The canister owner, who can manage treasury funds.
+  // Defaults to the deployer if not specified.
+  var owner : Principal = Option.get(do ? { args!.owner! }, deployer);
 
   // State for certified HTTP assets (like /.well-known/...)
   var stable_http_assets : HttpAssets.StableEntries = [];
@@ -56,7 +64,7 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
   // --- UNCOMMENT THIS BLOCK TO ENABLE AUTHENTICATION ---
 
   // let issuerUrl = "https://bfggx-7yaaa-aaaai-q32gq-cai.icp0.io";
-  // let allowanceUrl = "https://bmfnl-jqaaa-aaaai-q32ha-cai.icp0.io";
+  // let allowanceUrl = "https://prometheusprotocol.org/connections";
   // let requiredScopes = ["openid"];
 
   // //function to transform the response for jwks client
@@ -92,7 +100,7 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
   let beaconCanisterId = Principal.fromText("m63pw-fqaaa-aaaai-q33pa-cai");
   transient let beaconContext : ?Beacon.BeaconContext = ?Beacon.init(
       beaconCanisterId, // Public beacon canister ID
-      24 * 60 * 60, // Send a beacon every 24 hours
+      1 * 60 * 60, // Send a beacon every 1 hour
   );
   */
   // --- END OF BEACON BLOCK ---
@@ -319,5 +327,55 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
 
   system func postupgrade() {
     HttpAssets.postupgrade(http_assets);
+  };
+
+  /**
+   * Creates a new API key. This API key is linked to the caller's principal.
+   * @param name A human-readable name for the key.
+   * @returns The raw, unhashed API key. THIS IS THE ONLY TIME IT WILL BE VISIBLE.
+   */
+  public shared (msg) func create_my_api_key(name : Text, scopes : [Text]) : async Text {
+    switch (authContext) {
+      case (null) {
+        Debug.trap("Authentication is not enabled on this canister.");
+      };
+      case (?ctx) {
+        return await ApiKey.create_my_api_key(
+          ctx,
+          msg.caller,
+          name,
+          scopes,
+        );
+      };
+    };
+  };
+
+  /** Revoke (delete) an API key owned by the caller.
+   * @param key_id The ID of the key to revoke.
+   * @returns True if the key was found and revoked, false otherwise.
+   */
+  public shared (msg) func revoke_my_api_key(key_id : Text) : async () {
+    switch (authContext) {
+      case (null) {
+        Debug.trap("Authentication is not enabled on this canister.");
+      };
+      case (?ctx) {
+        return ApiKey.revoke_my_api_key(ctx, msg.caller, key_id);
+      };
+    };
+  };
+
+  /** List all API keys owned by the caller.
+   * @returns A list of API key metadata (but not the raw keys).
+   */
+  public query (msg) func list_my_api_keys() : async [AuthTypes.ApiKeyMetadata] {
+    switch (authContext) {
+      case (null) {
+        Debug.trap("Authentication is not enabled on this canister.");
+      };
+      case (?ctx) {
+        return ApiKey.list_my_api_keys(ctx, msg.caller);
+      };
+    };
   };
 };
