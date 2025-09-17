@@ -124,11 +124,19 @@ Use the `app-store` CLI to submit your service for verification and deployment.
 ```bash
 # 1. Get your commit hash
 git rev-parse HEAD
+```
 
-# 2. Run the publish command with your commit hash and wasm path
-npm run app-store publish \
-  --commit-hash <your_git_commit_hash> \
-  --wasm-path .dfx/local/canisters/<canister_name>/<canister_name>.wasm
+```bash
+# 2. Run the init command to create your manifest
+npm run app-store init 
+```
+
+Complete the prompts to set up your `prometheus.yml` manifest file.
+Add your commit hash and the path to your WASM file (found in `.dfx/local/canisters/<your_canister_name>/<your_canister_name>.wasm`).
+
+```bash
+# 3. Run the publish command with your app version
+npm run app-store publish "0.1.0"
 ```
 
 Once your service passes the audit, the protocol will automatically deploy it and provide you with a mainnet canister ID. You can monitor the status on the **Prometheus Audit Hub**.

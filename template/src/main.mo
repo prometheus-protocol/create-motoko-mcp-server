@@ -3,6 +3,7 @@ import Text "mo:base/Text";
 import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
+import Option "mo:base/Option";
 
 import HttpTypes "mo:http-types";
 import Map "mo:map/Map";
@@ -26,9 +27,15 @@ import SrvTypes "mo:mcp-motoko-sdk/server/Types";
 
 import IC "mo:ic";
 
-shared ({ caller = deployer }) persistent actor class McpServer() = self {
+shared ({ caller = deployer }) persistent actor class McpServer(
+  args : ?{
+    owner : ?Principal;
+  }
+) = self {
 
-  var owner : Principal = deployer;
+  // The canister owner, who can manage treasury funds.
+  // Defaults to the deployer if not specified.
+  var owner : Principal = Option.get(do ? { args!.owner! }, deployer);
 
   // State for certified HTTP assets (like /.well-known/...)
   var stable_http_assets : HttpAssets.StableEntries = [];
@@ -361,7 +368,7 @@ shared ({ caller = deployer }) persistent actor class McpServer() = self {
   /** List all API keys owned by the caller.
    * @returns A list of API key metadata (but not the raw keys).
    */
-  public shared (msg) query func list_my_api_keys() : async [AuthTypes.ApiKeyMetadata] {
+  public query (msg) func list_my_api_keys() : async [AuthTypes.ApiKeyMetadata] {
     switch (authContext) {
       case (null) {
         Debug.trap("Authentication is not enabled on this canister.");
