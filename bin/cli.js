@@ -41,6 +41,11 @@ function copyDir(src, dest) {
 console.log(`🚀 Creating a new MCP server in ${projectDir}...`);
 copyDir(templateDir, projectDir);
 
+// After copying, rename `gitignore` back to `.gitignore`
+const gitignorePath = path.join(projectDir, 'gitignore');
+const dotGitignorePath = path.join(projectDir, '.gitignore');
+fs.renameSync(gitignorePath, dotGitignorePath);
+
 // Update the package.json with the correct project name
 const projectPackageJsonPath = path.join(projectDir, 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(projectPackageJsonPath, 'utf8'));
