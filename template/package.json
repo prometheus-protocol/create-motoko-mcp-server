@@ -16,7 +16,7 @@
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.16.5",
     "@prometheus-protocol/app-store-cli": "^1.5.2",
-    "@prometheus-protocol/auth-cli": "^1.2.0"
+    "@prometheus-protocol/auth-cli": "^1.2.1"
   },
   "engines": {
     "node": ">=18.0.0"
