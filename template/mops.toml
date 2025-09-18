@@ -17,7 +17,7 @@ ecdsa = "7.1.0"
 certified-cache = "0.3.0"
 sha2 = "0.1.6"
 ic = "3.2.0"
-mcp-motoko-sdk = "2.0.0"
+mcp-motoko-sdk = "2.0.1"
 
 [dev-dependencies]
 test = "2.1.1"
