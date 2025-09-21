@@ -4,6 +4,8 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Option "mo:base/Option";
+import Int "mo:base/Int";
+import Time "mo:base/Time";
 
 import HttpTypes "mo:http-types";
 import Map "mo:map/Map";
@@ -100,7 +102,7 @@ shared ({ caller = deployer }) persistent actor class McpServer(
   let beaconCanisterId = Principal.fromText("m63pw-fqaaa-aaaai-q33pa-cai");
   transient let beaconContext : ?Beacon.BeaconContext = ?Beacon.init(
       beaconCanisterId, // Public beacon canister ID
-      1 * 60 * 60, // Send a beacon every 1 hour
+      ?(15 * 60), // Send a beacon every 15 minutes
   );
   */
   // --- END OF BEACON BLOCK ---
@@ -208,6 +210,9 @@ shared ({ caller = deployer }) persistent actor class McpServer(
   transient let mcpServer = Mcp.createServer(mcpConfig);
 
   // --- PUBLIC ENTRY POINTS ---
+
+  // Do not remove these public methods below. They are required for the MCP Registry and MCP Orchestrator
+  // to manage the canister upgrades and installs, handle payments, and allow owner only methods.
 
   /// Get the current owner of the canister.
   public query func get_owner() : async Principal { return owner };
@@ -377,5 +382,22 @@ shared ({ caller = deployer }) persistent actor class McpServer(
         return ApiKey.list_my_api_keys(ctx, msg.caller);
       };
     };
+  };
+
+  public type UpgradeFinishedResult = {
+    #InProgress : Nat;
+    #Failed : (Nat, Text);
+    #Success : Nat;
+  };
+  private func natNow() : Nat {
+    return Int.abs(Time.now());
+  };
+  /* Return success after post-install/upgrade operations complete.
+   * The Nat value is a timestamp (in nanoseconds) of when the upgrade finished.
+   * If the upgrade is still in progress, return #InProgress with a timestamp of when it started.
+   * If the upgrade failed, return #Failed with a timestamp and an error message.
+   */
+  public func icrc120_upgrade_finished() : async UpgradeFinishedResult {
+    #Success(natNow());
   };
 };
