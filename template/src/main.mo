@@ -4,6 +4,8 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Option "mo:base/Option";
+import Int "mo:base/Int";
+import Time "mo:base/Time";
 
 import HttpTypes "mo:http-types";
 import Map "mo:map/Map";
@@ -377,5 +379,18 @@ shared ({ caller = deployer }) persistent actor class McpServer(
         return ApiKey.list_my_api_keys(ctx, msg.caller);
       };
     };
+  };
+
+  /// (5.1) Upgrade finished stub
+  public type UpgradeFinishedResult = {
+    #InProgress : Nat;
+    #Failed : (Nat, Text);
+    #Success : Nat;
+  };
+  private func natNow() : Nat {
+    return Int.abs(Time.now());
+  };
+  public func icrc120_upgrade_finished() : async UpgradeFinishedResult {
+    #Success(natNow());
   };
 };
