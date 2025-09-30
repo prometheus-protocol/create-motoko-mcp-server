@@ -82,6 +82,7 @@ shared ({ caller = deployer }) persistent actor class McpServer(
   // // Initialize the auth context with the issuer URL and required scopes.
   // transient let authContext : ?AuthTypes.AuthContext = ?AuthState.init(
   //   Principal.fromActor(self),
+  //   owner,
   //   issuerUrl,
   //   requiredScopes,
   //   transformJwksResponse,
