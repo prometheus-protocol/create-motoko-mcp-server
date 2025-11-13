@@ -9,14 +9,19 @@
     "deploy:ic": "dfx deploy --network ic",
     "mops:install": "mops install",
     "inspector": "mcp-inspector",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "app-store": "app-store-cli",
     "auth": "auth-cli"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.16.5",
-    "@prometheus-protocol/app-store-cli": "^1.5.3",
-    "@prometheus-protocol/auth-cli": "^1.2.1"
+    "@dfinity/pic": "^0.16.1",
+    "@icp-sdk/core": "^4.2.2",
+    "@modelcontextprotocol/inspector": "^0.17.2",
+    "@prometheus-protocol/app-store-cli": "^1.8.0",
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   },
   "engines": {
     "node": ">=18.0.0"
