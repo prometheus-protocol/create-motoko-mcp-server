@@ -14,7 +14,7 @@
  */
 
 import { describe, beforeAll, afterAll, it, expect, inject } from 'vitest';
-import { PocketIc, PocketIcServer, createIdentity } from '@dfinity/pic';
+import { PocketIc, createIdentity } from '@dfinity/pic';
 import { IDL } from '@icp-sdk/core/candid';
 import { AnonymousIdentity } from '@icp-sdk/core/agent';
 import { Principal } from '@icp-sdk/core/principal';
@@ -31,18 +31,13 @@ const MCP_SERVER_WASM_PATH = path.resolve(
 
 describe('MCP Server Requirements', () => {
   let pic: PocketIc;
-  let picServer: PocketIcServer;
   let serverActor: Actor<McpServerService>;
   let canisterId: Principal;
   let testOwner = createIdentity('test-owner');
 
   beforeAll(async () => {
-    // Start PocketIC server
-    picServer = await PocketIcServer.start({
-      showCanisterLogs: false,
-      showRuntimeLogs: false,
-    });
-    const picUrl = picServer.getUrl();
+    // Use the global PocketIC server URL
+    const picUrl = inject('PIC_URL');
     
     // Create PocketIC instance
     pic = await PocketIc.create(picUrl);
@@ -72,7 +67,6 @@ describe('MCP Server Requirements', () => {
 
   afterAll(async () => {
     await pic?.tearDown();
-    await picServer?.stop();
   });
 
   describe('JSON-RPC Tool Discovery', () => {

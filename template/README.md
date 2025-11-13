@@ -229,4 +229,80 @@ When all tests pass, you'll see:
 
 ### Adding Custom Tools
 
-When you add new tools to `src/tools/`, the existing tests will automatically verify they are discoverable. You may want to add tool-specific tests to validate their behavior.
+When you add new tools to `src/tools/`, the existing tests will automatically verify they are discoverable. However, you should add tool-specific tests to validate their behavior and ensure they work correctly.
+
+**Example: Testing the `get_weather` tool**
+
+```typescript
+describe('get_weather Tool', () => {
+  it('should return weather for a valid location', async () => {
+    serverActor.setIdentity(new AnonymousIdentity());
+
+    const rpcPayload = {
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: {
+        name: 'get_weather',
+        arguments: { location: 'New York' }
+      },
+      id: 'test-get-weather',
+    };
+    const body = new TextEncoder().encode(JSON.stringify(rpcPayload));
+
+    const httpResponse = await serverActor.http_request_update({
+      method: 'POST',
+      url: '/mcp',
+      headers: [['Content-Type', 'application/json']],
+      body,
+      certificate_version: [],
+    });
+
+    expect(httpResponse.status_code).toBe(200);
+    
+    const responseBody = JSON.parse(
+      new TextDecoder().decode(httpResponse.body as Uint8Array),
+    );
+
+    expect(responseBody.result.content).toBeDefined();
+    expect(responseBody.result.isError).toBe(false);
+    
+    // Verify the response contains weather information
+    const resultText = responseBody.result.content[0].text;
+    expect(resultText).toContain('New York');
+    expect(resultText).toContain('weather');
+  });
+
+  it('should handle missing location parameter', async () => {
+    serverActor.setIdentity(new AnonymousIdentity());
+
+    const rpcPayload = {
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: {
+        name: 'get_weather',
+        arguments: {} // Missing location
+      },
+      id: 'test-missing-param',
+    };
+    const body = new TextEncoder().encode(JSON.stringify(rpcPayload));
+
+    const httpResponse = await serverActor.http_request_update({
+      method: 'POST',
+      url: '/mcp',
+      headers: [['Content-Type', 'application/json']],
+      body,
+      certificate_version: [],
+    });
+
+    const responseBody = JSON.parse(
+      new TextDecoder().decode(httpResponse.body as Uint8Array),
+    );
+
+    // Should return an error response
+    expect(responseBody.result.isError).toBe(true);
+    expect(responseBody.result.content[0].text).toContain('location');
+  });
+});
+```
+
+Add these tests to your `test/prometheus.test.ts` file to ensure your tools behave correctly. When you create new tools, follow this pattern to test their specific functionality.
