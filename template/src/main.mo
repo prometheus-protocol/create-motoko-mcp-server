@@ -9,7 +9,6 @@ import Time "mo:base/Time";
 
 import HttpTypes "mo:http-types";
 import Map "mo:map/Map";
-import Json "mo:json";
 
 import AuthCleanup "mo:mcp-motoko-sdk/auth/Cleanup";
 import AuthState "mo:mcp-motoko-sdk/auth/State";
@@ -27,7 +26,9 @@ import ApiKey "mo:mcp-motoko-sdk/auth/ApiKey";
 
 import SrvTypes "mo:mcp-motoko-sdk/server/Types";
 
-import IC "mo:ic";
+// Import tool modules
+import ToolContext "tools/ToolContext";
+import GetWeather "tools/get_weather";
 
 shared ({ caller = deployer }) persistent actor class McpServer(
   args : ?{
@@ -141,52 +142,20 @@ shared ({ caller = deployer }) persistent actor class McpServer(
     },
   ];
 
-  transient let tools : [McpTypes.Tool] = [{
-    name = "get_weather";
-    title = ?"Weather Provider";
-    description = ?"Get current weather information for a location";
-    inputSchema = Json.obj([
-      ("type", Json.str("object")),
-      ("properties", Json.obj([("location", Json.obj([("type", Json.str("string")), ("description", Json.str("City name or zip code"))]))])),
-      ("required", Json.arr([Json.str("location")])),
-    ]);
-    outputSchema = ?Json.obj([
-      ("type", Json.str("object")),
-      ("properties", Json.obj([("report", Json.obj([("type", Json.str("string")), ("description", Json.str("The textual weather report."))]))])),
-      ("required", Json.arr([Json.str("report")])),
-    ]);
-
-    payment = null; // No payment required, this tool is free to use.
-    // To require payment, set the `payment` field like this:
-    // payment = ?{
-    //   ledger = Principal.fromText("vizcg-th777-77774-qaaea-cai"); // ICRC2 Ledger canister ID
-    //   amount = 10_000; // Amount in e8s (1 ICP)
-    // };
-  }];
-
-  // --- 2. DEFINE YOUR TOOL LOGIC ---
-  // The `auth` parameter will be `null` if auth is disabled or if the user is anonymous.
-  // It will contain user info if auth is enabled and the user provides a valid token.
-  func getWeatherTool(args : McpTypes.JsonValue, auth : ?AuthTypes.AuthInfo, cb : (Result.Result<McpTypes.CallToolResult, McpTypes.HandlerError>) -> ()) : async () {
-    let location = switch (Result.toOption(Json.getAsText(args, "location"))) {
-      case (?loc) { loc };
-      case (null) {
-        return cb(#ok({ content = [#text({ text = "Missing 'location' arg." })]; isError = true; structuredContent = null }));
-      };
-    };
-
-    // The human-readable report.
-    let report = "The weather in " # location # " is sunny.";
-
-    // Build the structured JSON payload that matches our outputSchema.
-    let structuredPayload = Json.obj([("report", Json.str(report))]);
-    let stringified = Json.stringify(structuredPayload, null);
-
-    // Return the full, compliant result.
-    cb(#ok({ content = [#text({ text = stringified })]; isError = false; structuredContent = ?structuredPayload }));
+  // Create the tool context that will be passed to all tools
+  transient let toolContext : ToolContext.ToolContext = {
+    canisterPrincipal = Principal.fromActor(self);
+    owner = owner;
+    appContext = appContext;
   };
 
-  // --- 3. CONFIGURE THE SDK ---
+  // Import tool configurations from separate modules
+  transient let tools : [McpTypes.Tool] = [
+    GetWeather.config(),
+    // Add more tools here as you create them
+  ];
+
+  // --- 2. CONFIGURE THE SDK ---
   transient let mcpConfig : McpTypes.McpConfig = {
     self = Principal.fromActor(self);
     allowanceUrl = null; // No allowance URL needed for free tools.
@@ -202,12 +171,13 @@ shared ({ caller = deployer }) persistent actor class McpServer(
     };
     tools = tools;
     toolImplementations = [
-      ("get_weather", getWeatherTool),
+      ("get_weather", GetWeather.handle(toolContext)),
+      // Add more tool implementations here as you create them
     ];
     beacon = beaconContext;
   };
 
-  // --- 4. CREATE THE SERVER LOGIC ---
+  // --- 3. CREATE THE SERVER LOGIC ---
   transient let mcpServer = Mcp.createServer(mcpConfig);
 
   // --- PUBLIC ENTRY POINTS ---

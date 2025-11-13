@@ -62,6 +62,27 @@ Your server is live and its default `get_weather` tool is ready to use.
     # Replace `your_canister_id` with the actual ID from the deploy output
     http://127.0.0.1:4943/mcp/?canisterId=your_canister_id
     ```
+
+### Step 5: Run the Test Suite
+
+Your template includes a comprehensive test suite that validates all MCP server requirements.
+
+```bash
+npm test
+```
+
+The test suite verifies:
+- ✅ **Tool Discovery (JSON-RPC)** - Tools are discoverable via the `/mcp` endpoint
+- ✅ **Owner System** - Canister has proper owner management (`get_owner`, `set_owner`)
+- ✅ **Wallet/Treasury System** - Treasury balance queries work (`get_treasury_balance`)
+- ✅ **ICRC-120 Upgrade System** - Upgrade status reporting for App Store compatibility
+- ✅ **API Key System** - Authentication works for paid tools (optional for public servers)
+
+**Watch mode** for development:
+```bash
+npm run test:watch
+```
+
 🎉 **Congratulations!** You have a working local MCP server.
 
 ---
@@ -165,5 +186,123 @@ Any code change to a live service requires publishing a new version.
 
 ## What's Next?
 
--   **Customize Your Tool:** Open `src/main.mo` to start building your own custom MCP tools.
+-   **Customize Your Tools:** Open `src/tools/` to modify existing tools or add new ones following the modular pattern.
+-   **Run Tests:** Use `npm test` to ensure your changes meet all MCP server requirements.
 -   **Learn More:** Check out the full [Service Developer Docs](https://prometheusprotocol.org/docs) for advanced topics.
+
+---
+
+## Testing
+
+### Test Suite Overview
+
+The template includes a comprehensive test suite (`test/prometheus.test.ts`) that validates your MCP server meets all requirements for the Prometheus Protocol App Store.
+
+**What's tested:**
+1. **JSON-RPC Tool Discovery** - Verifies tools are discoverable via HTTP endpoint
+2. **Owner System** - Confirms owner management functions work correctly
+3. **Wallet/Treasury System** - Validates treasury balance queries
+4. **ICRC-120 Upgrade System** - Ensures compatibility with App Store upgrade process
+5. **API Key System** - Tests authentication for paid tools (if enabled)
+6. **Complete Integration** - End-to-end validation of all requirements
+
+### Running Tests
+
+```bash
+# Run tests once
+npm test
+
+# Watch mode for development
+npm run test:watch
+```
+
+### Test Output
+
+When all tests pass, you'll see:
+```
+✅ MCP Server Requirements Summary:
+   📡 Tool Discovery (JSON-RPC): ✅
+   👤 Owner System: ✅
+   💰 Wallet/Treasury System: ✅
+   🔄 ICRC-120 Upgrade: ✅
+```
+
+### Adding Custom Tools
+
+When you add new tools to `src/tools/`, the existing tests will automatically verify they are discoverable. However, you should add tool-specific tests to validate their behavior and ensure they work correctly.
+
+**Example: Testing the `get_weather` tool**
+
+```typescript
+describe('get_weather Tool', () => {
+  it('should return weather for a valid location', async () => {
+    serverActor.setIdentity(new AnonymousIdentity());
+
+    const rpcPayload = {
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: {
+        name: 'get_weather',
+        arguments: { location: 'New York' }
+      },
+      id: 'test-get-weather',
+    };
+    const body = new TextEncoder().encode(JSON.stringify(rpcPayload));
+
+    const httpResponse = await serverActor.http_request_update({
+      method: 'POST',
+      url: '/mcp',
+      headers: [['Content-Type', 'application/json']],
+      body,
+      certificate_version: [],
+    });
+
+    expect(httpResponse.status_code).toBe(200);
+    
+    const responseBody = JSON.parse(
+      new TextDecoder().decode(httpResponse.body as Uint8Array),
+    );
+
+    expect(responseBody.result.content).toBeDefined();
+    expect(responseBody.result.isError).toBe(false);
+    
+    // Verify the response contains weather information
+    const resultText = responseBody.result.content[0].text;
+    expect(resultText).toContain('New York');
+    expect(resultText).toContain('weather');
+  });
+
+  it('should handle missing location parameter', async () => {
+    serverActor.setIdentity(new AnonymousIdentity());
+
+    const rpcPayload = {
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: {
+        name: 'get_weather',
+        arguments: {} // Missing location
+      },
+      id: 'test-missing-param',
+    };
+    const body = new TextEncoder().encode(JSON.stringify(rpcPayload));
+
+    const httpResponse = await serverActor.http_request_update({
+      method: 'POST',
+      url: '/mcp',
+      headers: [['Content-Type', 'application/json']],
+      body,
+      certificate_version: [],
+    });
+
+    const responseBody = JSON.parse(
+      new TextDecoder().decode(httpResponse.body as Uint8Array),
+    );
+
+    // Should return an error response
+    expect(responseBody.result.isError).toBe(true);
+    expect(responseBody.result.content[0].text).toContain('location');
+  });
+});
+```
+
+Add these tests to your `test/prometheus.test.ts` file to ensure your tools behave correctly. When you create new tools, follow this pattern to test their specific functionality.
