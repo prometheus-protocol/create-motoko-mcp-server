@@ -2,3 +2,5 @@
 .dfx
 .env
 node_modules
+out/
+.prometheus
