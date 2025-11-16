@@ -106,7 +106,7 @@ With monetization active, your server can issue and validate API keys.
 1.  **Generate a Key:** Use `dfx` to call your canister and create a key linked to your developer identity.
     ```bash
     # Replace <your_canister_id> with your local canister ID
-    dfx canister call <your_canister_id> create_api_key '("My Test Key")'
+    dfx canister call <your_canister_id> create_my_api_key '("My Test Key", vec {})'
     ```
     **Save the returned key!** This is the only time it will be shown.
 
@@ -114,7 +114,6 @@ With monetization active, your server can issue and validate API keys.
     -   Open the MCP Inspector as before.
     -   In the "Authorization" section, set the `x-api-key` header to the API key you just generated.
     -   Call the `get_weather` tool again. It should now succeed, indicating that your monetization setup is working.
-    ```
 
 ### Step 3 (Optional): Enable Interactive Login
 
@@ -125,42 +124,56 @@ npm run auth register
 
 ---
 
-## Part 3: Publish to the App Store (Deploy to Mainnet)
+## Part 3: Deploy to Mainnet
 
-Instead of deploying to mainnet yourself, you publish your service to the Prometheus Protocol. The protocol then verifies, audits, and deploys your code for you.
+Once you're ready to deploy your MCP server to production, you can deploy it directly to the Internet Computer mainnet.
 
-### Step 1: Commit Your Changes
+### Step 1: Prepare for Mainnet Deployment
 
-Make sure all your code changes (like enabling monetization) are committed to Git.
+1.  **Ensure you have cycles:** Deploying to mainnet requires ICP tokens or cycles. You can get cycles from the [cycles faucet](https://internetcomputer.org/docs/current/developer-docs/getting-started/cycles/cycles-faucet) or by converting ICP tokens.
 
-```bash
-git add .
-git commit -m "feat: enable monetization"
-```
+2.  **Review your configuration:** Make sure your `src/main.mo` is configured correctly for production (authentication settings, tool pricing, etc.).
 
-### Step 2: Publish Your Service
+### Step 2: Deploy to Mainnet
 
-Use the `app-store` CLI to submit your service for verification and deployment.
+Deploy your canister to the Internet Computer mainnet:
 
 ```bash
-# 1. Get your commit hash
-git rev-parse HEAD
+npm run deploy:ic
 ```
+
+This will:
+- Create your canister on mainnet
+- Deploy your code
+- Provide you with a mainnet canister ID
+
+**Save your mainnet canister ID** - you'll need it to manage your server and share with users.
+
+### Step 3: Test Your Mainnet Deployment
+
+Connect to your mainnet canister using the MCP Inspector:
 
 ```bash
-# 2. Run the init command to create your manifest
-npm run app-store init 
+npm run inspector
 ```
 
-Complete the prompts to set up your `prometheus.yml` manifest file.
-Add your commit hash and the path to your WASM file (found in `.dfx/local/canisters/<your_canister_name>/<your_canister_name>.wasm`).
+Use the mainnet endpoint (replace `your_mainnet_canister_id` with your actual canister ID):
+```
+https://your_mainnet_canister_id.icp0.io/mcp
+```
+
+Example:
+```
+https://3od6b-qiaaa-aaaai-q37ma-cai.icp0.io/mcp
+```
+
+### Step 4: Generate API Keys for Mainnet
+
+If your server uses authentication, generate API keys for your mainnet deployment:
 
 ```bash
-# 3. Run the publish command with your app version
-npm run app-store publish "0.1.0"
+dfx canister call <your_mainnet_canister_id> create_my_api_key '("Production Key", vec {})' --network ic
 ```
-
-Once your service passes the audit, the protocol will automatically deploy it and provide you with a mainnet canister ID. You can monitor the status on the **Prometheus Audit Hub**.
 
 ---
 
@@ -168,19 +181,28 @@ Once your service passes the audit, the protocol will automatically deploy it an
 
 ### Treasury Management
 
-Your canister includes built-in Treasury functions to securely manage the funds it collects. You can call these with `dfx` against your **mainnet canister ID**.
+Your canister includes built-in treasury functions to securely manage the funds it collects. You can call these with `dfx` against your **mainnet canister ID**.
 
--   `get_owner()`
--   `get_treasury_balance(ledger_id)`
--   `withdraw(ledger_id, amount, destination)`
+```bash
+# Get the current owner
+dfx canister call <your_mainnet_canister_id> get_owner --network ic
 
-### Updating Your Service (e.g., Enabling the Beacon)
+# Check treasury balance for a specific token ledger
+dfx canister call <your_mainnet_canister_id> get_treasury_balance '(principal "ledger_canister_id")' --network ic
 
-Any code change to a live service requires publishing a new version.
+# Withdraw funds (owner only)
+dfx canister call <your_mainnet_canister_id> withdraw '(principal "ledger_canister_id", 1000000, variant { Account = record { owner = principal "your_principal"; subaccount = null } })' --network ic
+```
 
-1.  Open `src/main.mo` and uncomment the `beaconContext`.
-2.  Commit the change: `git commit -m "feat: enable usage beacon"`.
-3.  Re-run the **publishing process** from Part 3 with the new commit hash.
+### Updating Your Service
+
+To update your deployed canister:
+
+1.  Make your code changes in `src/`
+2.  Test locally with `npm run deploy`
+3.  Deploy the update to mainnet: `npm run deploy:ic`
+
+**Note:** Be careful with upgrades - ensure your changes are backwards compatible and test thoroughly on local replica first.
 
 ---
 
@@ -188,7 +210,8 @@ Any code change to a live service requires publishing a new version.
 
 -   **Customize Your Tools:** Open `src/tools/` to modify existing tools or add new ones following the modular pattern.
 -   **Run Tests:** Use `npm test` to ensure your changes meet all MCP server requirements.
--   **Learn More:** Check out the full [Service Developer Docs](https://prometheusprotocol.org/docs) for advanced topics.
+-   **Deploy to Mainnet:** Follow Part 3 to deploy your server to production.
+-   **Learn More:** Check out the [DFINITY Documentation](https://internetcomputer.org/docs) for advanced canister development topics.
 
 ---
 

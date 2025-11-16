@@ -8,17 +8,15 @@
     "deploy": "dfx deploy",
     "deploy:ic": "dfx deploy --network ic",
     "mops:install": "mops install",
-    "inspector": "mcp-inspector",
+    "inspector": "npx @modelcontextprotocol/inspector",
     "test": "vitest run",
     "test:watch": "vitest",
-    "app-store": "app-store-cli",
-    "auth": "auth-cli"
+    "app-store": "npx @prometheus-protocol/app-store-cli",
+    "auth": "npx @prometheus-protocol/auth-cli"
   },
   "devDependencies": {
     "@dfinity/pic": "^0.16.1",
     "@icp-sdk/core": "^4.2.2",
-    "@modelcontextprotocol/inspector": "^0.17.2",
-    "@prometheus-protocol/app-store-cli": "^1.8.0",
     "@types/node": "^22.10.1",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
